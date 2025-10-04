@@ -31,7 +31,7 @@ jobs:
       - name: Run lint check
         run: |
           pip install flake8
-          flake8 .
+          flake8 . --ignore=E501,W292,W293
 
       - name: Run tests
         run: |

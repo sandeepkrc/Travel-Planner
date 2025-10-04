@@ -1,0 +1,40 @@
+ADK_demo/
+├── agents/
+│   ├── host_agent/
+│   │   ├── agent.py              
+│   │   ├── task_manager.py      
+│   │   ├── __main__.py         
+│   │   └── .well-known/
+│   │       └── agent.json   
+│   │
+│   ├── flight_agent/
+│   │   ├── agent.py        
+│   │   ├── task_manager.py    
+│   │   ├── __main__.py         
+│   │   └── .well-known/
+│   │       └── agent.json        
+│   │
+│   ├── stay_agent/
+│   │   ├── agent.py              
+│   │   ├── task_manager.py       
+│   │   ├── __main__.py           
+│   │   └── .well-known/
+│   │       └── agent.json     
+│   │
+│   └── activities_agent/
+│       ├── agent.py              
+│       ├── task_manager.py       
+│       ├── __main__.py           
+│       └── .well-known/
+│           └── agent.json       
+│
+├── common/
+│   ├── a2a_client.py             # Utility to send requests to other agents
+│   └── a2a_server.py             # Shared FastAPI A2A-compatible server template
+│
+├── shared/
+│   └── schemas.py                # Shared Pydantic schema
+│
+├── streamlit_app.py             # Frontend UI for user input and response rendering
+├── requirements.txt           
+└── README.md                    

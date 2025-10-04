@@ -3,5 +3,4 @@
 venv/*
 t.py
 __pycache__
-
-
+env/*

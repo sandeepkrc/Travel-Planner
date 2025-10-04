@@ -7,7 +7,7 @@
 # import json
 # from google.adk.models import Gemini
 # import os
-# print("Initializing flight agent...",os.environ.get('GOOGLE_API_KEY'))  
+# print("Initializing flight agent...",os.environ.get('GOOGLE_API_KEY'))
 
 # flight_agent = Agent(
 #     name="flight_agent",
@@ -31,8 +31,6 @@
 # )
 # USER_ID = "user_activities"
 # SESSION_ID = "session_activities"
-
-
 
 
 # async def execute(request):
@@ -73,7 +71,7 @@ import json
 import os
 import uuid  # <-- NEW: Import for unique session IDs
 
-print("Initializing flight agent...", os.environ.get('GOOGLE_API_KEY'))
+print("Initializing flight agent...", os.environ.get("GOOGLE_API_KEY"))
 
 flight_agent = Agent(
     name="flight_agent",
@@ -85,32 +83,28 @@ flight_agent = Agent(
         "**YOUR ENTIRE RESPONSE MUST BE A SINGLE, VALID JSON OBJECT.** "
         "**DO NOT INCLUDE ANY INTRODUCTORY, EXPLANATORY, OR CONVERSATIONAL TEXT WHATSOEVER.** "
         "**YOU MUST USE THE TOP-LEVEL KEY 'flights'** with a list of flight objects as its value."
-    )
+    ),
 )
 
 session_service = InMemorySessionService()
 runner = Runner(
-    agent=flight_agent,
-    app_name="flight_app",
-    session_service=session_service
+    agent=flight_agent, app_name="flight_app", session_service=session_service
 )
-USER_ID = "flight_service_user" # Updated user ID for clarity
+USER_ID = "flight_service_user"  # Updated user ID for clarity
 
 
 async def execute(request):
     # --- FIX 1: Use UUID for unique session to prevent 'Session not found' ---
     new_session_id = str(uuid.uuid4())
     app_name = "flight_app"
-    
+
     # Try to create session explicitly, though runner often handles it
     try:
         await session_service.create_session(
-            app_name=app_name,
-            user_id=USER_ID,
-            session_id=new_session_id
+            app_name=app_name, user_id=USER_ID, session_id=new_session_id
         )
     except SessionAlreadyExistsError:
-        pass # Ignore if it somehow exists
+        pass  # Ignore if it somehow exists
 
     # --- FIX 2: Correct the prompt to ask for FLIGHTS (not activities) ---
     prompt = (
@@ -119,33 +113,41 @@ async def execute(request):
         f"with a budget of {request.get('budget', 'UNKNOWN')}. "
         f"Strictly adhere to the instruction: Respond ONLY in JSON format using the key 'flights' with a list of flight objects."
     )
-    
+
     message = types.Content(role="user", parts=[types.Part(text=prompt)])
     response_data = None
-    
+
     try:
         # --- Run the Agent with the unique session ID ---
-        async for event in runner.run_async(user_id=USER_ID, session_id=new_session_id, new_message=message):
+        async for event in runner.run_async(
+            user_id=USER_ID, session_id=new_session_id, new_message=message
+        ):
             if event.is_final_response():
                 response_text = event.content.parts[0].text
-                
+
                 try:
                     parsed = json.loads(response_text)
-                    
+
                     # --- FIX 3: Look for the correct key 'flights' ---
                     if "flights" in parsed and isinstance(parsed["flights"], list):
                         response_data = {"flights": parsed["flights"]}
                     else:
-                        print("Agent returned valid JSON but missing 'flights' key or not a list.")
-                        response_data = {"flights": response_text} # Fallback
-                
+                        print(
+                            "Agent returned valid JSON but missing 'flights' key or not a list."
+                        )
+                        response_data = {"flights": response_text}  # Fallback
+
                 except json.JSONDecodeError as e:
                     # Catch the conversational output error
-                    print("JSON parsing failed (Agent outputted conversational text):", e)
+                    print(
+                        "JSON parsing failed (Agent outputted conversational text):", e
+                    )
                     print("Response content:", response_text)
-                    response_data = {"flights": response_text} # Fallback to raw text for debugging
-                
-                break # Exit the loop after final response
+                    response_data = {
+                        "flights": response_text
+                    }  # Fallback to raw text for debugging
+
+                break  # Exit the loop after final response
 
     finally:
         # Clean up the session (optional but recommended for stateless runs)
@@ -155,4 +157,8 @@ async def execute(request):
         #     pass
 
         # Return the collected data
-        return response_data if response_data is not None else {"flights": "Agent failed to respond."}
+        return (
+            response_data
+            if response_data is not None
+            else {"flights": "Agent failed to respond."}
+        )

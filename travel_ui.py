@@ -17,7 +17,7 @@ if st.button("Plan My Trip ✨"):
             "destination": destination,
             "start_date": str(start_date),
             "end_date": str(end_date),
-            "budget": budget
+            "budget": budget,
         }
         response = requests.post("http://localhost:8000/run", json=payload)
         if response.ok:
